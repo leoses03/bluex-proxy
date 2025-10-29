@@ -3,7 +3,8 @@
 // ===============================================
 
 import express from "express";
-import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,16 +12,18 @@ const ACCESS_TOKEN = "bluexpress123";
 
 app.get("/track", async (req, res) => {
   const { tracking, token } = req.query;
-
   if (!tracking) return res.status(400).json({ error: "Falta el número de seguimiento" });
   if (ACCESS_TOKEN && token !== ACCESS_TOKEN)
     return res.status(403).json({ error: "Token inválido" });
 
   const url = `https://www.blue.cl/enviar/seguimiento?n_seguimiento=${tracking}`;
+
   try {
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
@@ -30,6 +33,7 @@ app.get("/track", async (req, res) => {
 
     await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
     const html = await page.content();
+
     await browser.close();
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -40,4 +44,4 @@ app.get("/track", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`✅ Proxy activo en puerto ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Proxy BlueExpress activo en puerto ${PORT}`));
