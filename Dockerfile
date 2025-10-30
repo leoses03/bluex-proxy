@@ -1,24 +1,30 @@
-# Usa imagen oficial de Node con Chromium incluido (ideal para Puppeteer)
+# 🧱 Imagen base: Node + Chromium (ideal para Puppeteer)
 FROM ghcr.io/puppeteer/puppeteer:21.3.0
 
-# Establece el directorio de trabajo
+# 📂 Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copia package.json y package-lock.json
+# 📦 Copiar archivos de dependencias primero
 COPY package*.json ./
 
-# Instala dependencias
+# 🚀 Instalar dependencias de producción (sin devDependencies)
 RUN npm install --omit=dev
 
-# Copia el resto del código
+# 🧾 Copiar todo el código del proyecto
 COPY . .
 
-# Define variables de entorno
+# ⚙️ Variables de entorno predeterminadas
 ENV PORT=3000 \
-    NODE_ENV=production
+    NODE_ENV=production \
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
-# Expone el puerto
+# 🌐 Exponer el puerto donde corre la app
 EXPOSE 3000
 
-# Inicia la aplicación
+# 🧠 Healthcheck (verifica que el contenedor responda correctamente)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000', res => process.exit(res.statusCode === 200 ? 0 : 1))" || exit 1
+
+# 🏁 Comando para iniciar la aplicación
 CMD ["node", "server.js"]
