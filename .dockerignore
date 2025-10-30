@@ -1,0 +1,17 @@
+# Dependencias locales
+node_modules
+npm-debug.log
+yarn.lock
+
+# Git y archivos de control
+.git
+.gitignore
+
+# Archivos de configuración del contenedor
+Dockerfile
+.dockerignore
+
+# Archivos innecesarios en producción
+README.md
+.env
+*.md
